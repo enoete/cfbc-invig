@@ -461,6 +461,106 @@ textarea { resize: vertical; min-height: 80px; }
 }
 .combo-clear.visible { display: block; }
 
+/* ── MOBILE EXAM CARDS ── */
+.exam-cards { display: none; }
+.exam-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.exam-card.status-sent   { border-left: 4px solid var(--teal); }
+.exam-card.status-pending { border-left: 4px solid var(--gold); }
+.exam-card.status-error  { border-left: 4px solid var(--red); }
+.exam-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.exam-card-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.exam-card-name {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.exam-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.exam-card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.exam-card-row .icon { font-size: 13px; flex-shrink: 0; }
+.exam-card-row strong { color: var(--text); }
+.exam-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.exam-card-actions .btn { flex: 1; justify-content: center; font-size: 12px; }
+
+/* ── MOBILE ROSTER CARDS ── */
+.roster-cards { display: none; }
+.roster-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.roster-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.roster-avatar.inactive { background: var(--text-faint); }
+.roster-info { flex: 1; min-width: 0; }
+.roster-info .name { font-weight: 600; font-size: 14px; color: var(--navy); }
+.roster-info .email { font-size: 11px; color: var(--text-faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.roster-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  /* Timetable — hide table, show cards */
+  .tt-table-wrap { display: none; }
+  .exam-cards { display: block; }
+
+  /* Roster — hide table, show cards */
+  .roster-table-wrap { display: none; }
+  .roster-cards { display: block; }
+
+  /* Notify rows — full width */
+  .notify-row { align-items: flex-start; }
+}
+
 /* ── RESPONSIVE — TABLET ── */
 @media (max-width: 900px) {
   .stats { grid-template-columns: 1fr 1fr; }
@@ -724,7 +824,7 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap tt-table-wrap">
               <table>
                 <thead><tr>
                   <th>Date</th><th>Time</th><th>Code</th><th>Course Name</th>
@@ -736,6 +836,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
         </div>
+        <div class="exam-cards" id="tt-cards"></div>
       </div>
 
       <!-- ══ ROSTER ══ -->
@@ -749,7 +850,7 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap roster-table-wrap">
               <table>
                 <thead><tr><th>Name</th><th>Email</th><th>Calendar ID</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="roster-body"></tbody>
@@ -757,6 +858,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
         </div>
+        <div class="roster-cards" id="roster-cards"></div>
       </div>
 
       <!-- ══ NOTIFY ══ -->
@@ -1249,10 +1351,16 @@ function renderTimetable() {
   }).sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 
   const tbody = document.getElementById('tt-body');
+  const cards = document.getElementById('tt-cards');
+
   if (exams.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">📅</div><div class="msg">No exams match your filter</div></div></td></tr>';
+    const empty = '<div class="empty"><div class="icon">📅</div><div class="msg">No exams match your filter</div></div>';
+    tbody.innerHTML = `<tr><td colspan="11">${empty}</td></tr>`;
+    cards.innerHTML = empty;
     return;
   }
+
+  // ── DESKTOP TABLE ──
   tbody.innerHTML = exams.map(e => `
     <tr>
       <td style="white-space:nowrap">${fmtDate(e.date)}</td>
@@ -1271,6 +1379,37 @@ function renderTimetable() {
         ${e.status==='PENDING'?`<button class="btn btn-teal btn-sm" onclick="quickSend('${e.id}')">✉️</button>`:''}
       </td>
     </tr>`).join('');
+
+  // ── MOBILE CARDS ──
+  // Group by date
+  const byDate = {};
+  exams.forEach(e => { (byDate[e.date] = byDate[e.date] || []).push(e); });
+
+  cards.innerHTML = Object.entries(byDate).map(([date, dayExams]) => `
+    <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);padding:0 2px">${fmtDate(date)}</div>
+    ${dayExams.map(e => `
+      <div class="exam-card status-${e.status.toLowerCase()}">
+        <div class="exam-card-top">
+          <div>
+            <div class="exam-card-code">${e.code}</div>
+            <div class="exam-card-name">${e.courseName}</div>
+          </div>
+          <span class="badge badge-${e.status.toLowerCase()}">${e.status}</span>
+        </div>
+        <div class="exam-card-badges">
+          <span class="badge ${e.time==='9:00 AM'?'badge-am':'badge-pm'}">${e.time}</span>
+          <span class="badge" style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border)">📍 ${e.room}</span>
+          <span class="badge" style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border)">👥 ${e.students} students</span>
+        </div>
+        <div class="exam-card-row"><span class="icon">🧑‍💼</span><div><strong>${e.inv1 || '—'}</strong>${e.inv2 ? ` &amp; <strong>${e.inv2}</strong>` : ''}</div></div>
+        <div class="exam-card-row"><span class="icon">🎓</span><div>${e.lecturer}</div></div>
+        <div class="exam-card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openExamModal('${e.id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteExam('${e.id}')">🗑️</button>
+          ${e.status==='PENDING'?`<button class="btn btn-teal btn-sm" onclick="quickSend('${e.id}')">✉️ Notify</button>`:''}
+        </div>
+      </div>`).join('')}
+  `).join('');
 }
 
 // ══════════════════════════════════════════════
@@ -1280,10 +1419,16 @@ function renderRoster() {
   const q = (document.getElementById('roster-search').value || '').toLowerCase();
   const list = state.roster.filter(p => !q || (p.name + p.email).toLowerCase().includes(q));
   const tbody = document.getElementById('roster-body');
+  const cards = document.getElementById('roster-cards');
+
   if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">👥</div><div class="msg">No lecturers found</div></div></td></tr>';
+    const empty = '<div class="empty"><div class="icon">👥</div><div class="msg">No lecturers found</div></div>';
+    tbody.innerHTML = `<tr><td colspan="5">${empty}</td></tr>`;
+    cards.innerHTML = empty;
     return;
   }
+
+  // ── DESKTOP TABLE ──
   tbody.innerHTML = list.map(p => `
     <tr>
       <td><strong>${p.name}</strong></td>
@@ -1295,6 +1440,23 @@ function renderRoster() {
         <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoster('${p.id}')">🗑️</button>
       </td>
     </tr>`).join('');
+
+  // ── MOBILE CARDS ──
+  cards.innerHTML = list.map(p => {
+    const initials = p.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+    return `
+    <div class="roster-card">
+      <div class="roster-avatar ${p.active==='YES'?'':'inactive'}">${initials}</div>
+      <div class="roster-info">
+        <div class="name">${p.name} ${p.active==='YES'?'':'<span class="badge badge-error" style="font-size:10px;padding:1px 6px">Inactive</span>'}</div>
+        <div class="email">${p.email}</div>
+      </div>
+      <div class="roster-card-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="openRosterModal('${p.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoster('${p.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════
