@@ -1,0 +1,1830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CFBC — Invigilation System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy: #0f2744;
+  --navy-mid: #1a3c5e;
+  --navy-light: #244d76;
+  --gold: #c8962a;
+  --gold-light: #e8b84b;
+  --gold-pale: #fdf3dc;
+  --teal: #1a7f6e;
+  --teal-light: #e8f7f4;
+  --red: #c0392b;
+  --red-light: #fdecea;
+  --amber: #d97706;
+  --amber-light: #fffbeb;
+  --bg: #f4f6fa;
+  --surface: #ffffff;
+  --border: #dde3ed;
+  --text: #1a2535;
+  --text-muted: #64748b;
+  --text-faint: #94a3b8;
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(15,39,68,0.08), 0 4px 16px rgba(15,39,68,0.06);
+  --shadow-lg: 0 8px 32px rgba(15,39,68,0.14);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── LAYOUT ── */
+.shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 220px;
+  background: var(--navy);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-logo .wordmark {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--gold-light);
+}
+.sidebar-logo .sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.4);
+  margin-top: 3px;
+}
+
+.nav { padding: 16px 12px; flex: 1; }
+.nav-section { margin-bottom: 24px; }
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  padding: 0 8px;
+  margin-bottom: 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  font-weight: 400;
+  transition: all 0.15s;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); color: #fff; }
+.nav-item.active { background: rgba(200,150,42,0.18); color: var(--gold-light); font-weight: 500; }
+.nav-item .icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--gold);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 99px;
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  font-size: 11px;
+  color: rgba(255,255,255,0.25);
+}
+
+/* ── MAIN ── */
+.main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.topbar-title { font-size: 16px; font-weight: 600; color: var(--navy); }
+.topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+.content { padding: 28px 32px; flex: 1; }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── STATS ROW ── */
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-card .label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-muted); }
+.stat-card .value { font-size: 28px; font-weight: 600; color: var(--navy); font-family: 'DM Mono', monospace; }
+.stat-card .sub { font-size: 12px; color: var(--text-faint); }
+.stat-card.gold { border-top: 3px solid var(--gold); }
+.stat-card.teal { border-top: 3px solid var(--teal); }
+.stat-card.red  { border-top: 3px solid var(--red); }
+.stat-card.navy { border-top: 3px solid var(--navy-light); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fafbfd;
+}
+.card-title { font-size: 14px; font-weight: 600; color: var(--navy); }
+.card-body { padding: 20px; }
+
+/* ── TABLES ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  background: var(--navy);
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  padding: 10px 14px;
+  text-align: left;
+  white-space: nowrap;
+}
+td {
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+  color: var(--text);
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f8fafc; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-pending { background: var(--amber-light); color: var(--amber); border: 1px solid #fde68a; }
+.badge-sent    { background: var(--teal-light);  color: var(--teal);  border: 1px solid #a7f3d0; }
+.badge-error   { background: var(--red-light);   color: var(--red);   border: 1px solid #fca5a5; }
+.badge-am { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+.badge-pm { background: #fdf4ff; color: #7e22ce; border: 1px solid #e9d5ff; }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--navy); color: #fff; }
+.btn-primary:hover { background: var(--navy-mid); }
+.btn-gold { background: var(--gold); color: #fff; }
+.btn-gold:hover { background: var(--gold-light); }
+.btn-teal { background: var(--teal); color: #fff; }
+.btn-teal:hover { opacity: 0.88; }
+.btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg); color: var(--text); }
+.btn-danger { background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; }
+.btn-danger:hover { background: #fee2e2; }
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+.btn-icon { padding: 6px; border-radius: 6px; }
+
+/* ── FORMS ── */
+.form-grid { display: grid; gap: 16px; }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+.form-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label { font-size: 12px; font-weight: 600; color: var(--navy-mid); letter-spacing: 0.3px; }
+input, select, textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--surface);
+  transition: border-color 0.15s;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--navy-mid); }
+input::placeholder { color: var(--text-faint); }
+textarea { resize: vertical; min-height: 80px; }
+.form-hint { font-size: 11px; color: var(--text-faint); }
+
+/* ── MODAL ── */
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,20,40,0.55);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 12px;
+  width: 640px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.2s ease;
+}
+@keyframes slideUp { from { transform: translateY(12px); opacity: 0; } }
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0;
+  background: var(--surface);
+  z-index: 1;
+}
+.modal-title { font-size: 16px; font-weight: 600; color: var(--navy); }
+.modal-body { padding: 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  background: #fafbfd;
+}
+
+/* ── TOAST ── */
+.toast-wrap {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  background: var(--navy);
+  color: #fff;
+  padding: 13px 18px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  animation: toastIn 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 340px;
+}
+.toast.success { background: var(--teal); }
+.toast.error   { background: var(--red); }
+.toast.warning { background: var(--amber); }
+@keyframes toastIn { from { transform: translateY(8px); opacity: 0; } }
+
+/* ── PILL TABS ── */
+.pill-tabs { display: flex; gap: 4px; background: var(--bg); border-radius: 8px; padding: 4px; margin-bottom: 20px; width: fit-content; }
+.pill-tab {
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: all 0.15s;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.pill-tab.active { background: var(--surface); color: var(--navy); box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+/* ── SEARCH BAR ── */
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.search-input-wrap { position: relative; }
+.search-input-wrap input { padding-left: 34px; width: 240px; }
+.search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 15px; }
+
+/* ── LOG ENTRY ── */
+.log-entry {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  align-items: flex-start;
+}
+.log-entry:last-child { border-bottom: none; }
+.log-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.log-dot.success { background: var(--teal); }
+.log-dot.error   { background: var(--red); }
+.log-dot.info    { background: var(--navy-light); }
+.log-meta { font-size: 11px; color: var(--text-faint); font-family: 'DM Mono', monospace; }
+
+/* ── EMPTY STATE ── */
+.empty {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-faint);
+}
+.empty .icon { font-size: 36px; margin-bottom: 12px; }
+.empty .msg { font-size: 14px; color: var(--text-muted); }
+.empty .hint { font-size: 12px; color: var(--text-faint); margin-top: 6px; }
+
+/* ── NOTIFY CONFIRM ── */
+.notify-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.notify-row:last-child { border-bottom: none; }
+.notify-check { width: 16px; height: 16px; accent-color: var(--navy); cursor: pointer; flex-shrink: 0; }
+
+/* ── COMBOBOX ── */
+.combo-wrap { position: relative; }
+.combo-wrap input {
+  width: 100%;
+  padding-right: 32px;
+  cursor: pointer;
+}
+.combo-arrow {
+  position: absolute;
+  right: 10px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 11px;
+  pointer-events: none;
+}
+.combo-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--navy-mid);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.combo-dropdown.open { display: block; }
+.combo-option {
+  padding: 9px 13px;
+  cursor: pointer;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.combo-option:last-child { border-bottom: none; }
+.combo-option:hover, .combo-option.focused { background: #eaf2fb; }
+.combo-option .opt-sub { font-size: 11px; color: var(--text-faint); }
+.combo-option.no-match { color: var(--text-faint); cursor: default; font-style: italic; }
+.combo-option.no-match:hover { background: none; }
+.combo-clear {
+  position: absolute;
+  right: 28px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 13px;
+  cursor: pointer;
+  display: none;
+  background: none;
+  border: none;
+  padding: 2px 4px;
+  line-height: 1;
+}
+.combo-clear.visible { display: block; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .stats { grid-template-columns: 1fr 1fr; }
+  .form-grid-3 { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .sidebar { width: 60px; }
+  .sidebar-logo .wordmark, .sidebar-logo .sub, .nav-label, .nav-item span { display: none; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .content { padding: 16px; }
+  .stats { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="wordmark">CFBC</div>
+      <div class="sub">Invigilation System</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">
+        <div class="nav-label">Main</div>
+        <div class="nav-item active" onclick="showPanel('dashboard')">
+          <span class="icon">📊</span><span>Dashboard</span>
+        </div>
+        <div class="nav-item" onclick="showPanel('timetable')">
+          <span class="icon">📅</span><span>Timetable</span>
+          <span class="nav-badge" id="pending-badge">0</span>
+        </div>
+        <div class="nav-item" onclick="showPanel('roster')">
+          <span class="icon">👥</span><span>Roster</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">Notify</div>
+        <div class="nav-item" onclick="showPanel('notify')">
+          <span class="icon">✉️</span><span>Send Notifications</span>
+        </div>
+        <div class="nav-item" onclick="showPanel('log')">
+          <span class="icon">📋</span><span>Activity Log</span>
+        </div>
+      </div>
+      <div class="nav-section">
+        <div class="nav-label">System</div>
+        <div class="nav-item" onclick="showPanel('settings')">
+          <span class="icon">⚙️</span><span>Settings</span>
+        </div>
+      </div>
+    </nav>
+    <div class="sidebar-footer">Semester II · AY 2025/26</div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-actions">
+        <button class="btn btn-gold" onclick="showPanel('notify')">✉️ Send Notifications</button>
+        <button class="btn btn-primary" onclick="openExamModal()">+ Add Exam</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ══ DASHBOARD ══ -->
+      <div id="panel-dashboard" class="panel active">
+        <div class="stats">
+          <div class="stat-card navy">
+            <div class="label">Total Exams</div>
+            <div class="value" id="stat-total">0</div>
+            <div class="sub">Semester II schedule</div>
+          </div>
+          <div class="stat-card gold">
+            <div class="label">Pending</div>
+            <div class="value" id="stat-pending">0</div>
+            <div class="sub">Not yet notified</div>
+          </div>
+          <div class="stat-card teal">
+            <div class="label">Sent</div>
+            <div class="value" id="stat-sent">0</div>
+            <div class="sub">Notifications delivered</div>
+          </div>
+          <div class="stat-card">
+            <div class="label">Lecturers</div>
+            <div class="value" id="stat-roster">0</div>
+            <div class="sub">Active in roster</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Upcoming Exams — Next 7 Days</div>
+          </div>
+          <div class="card-body" style="padding:0">
+            <div class="tbl-wrap">
+              <table id="dash-upcoming-table">
+                <thead><tr>
+                  <th>Date</th><th>Time</th><th>Course</th><th>Room</th><th>Invigilators</th><th>Status</th>
+                </tr></thead>
+                <tbody id="dash-upcoming-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">Recent Activity</div></div>
+          <div class="card-body" id="dash-log"></div>
+        </div>
+      </div>
+
+      <!-- ══ TIMETABLE ══ -->
+      <div id="panel-timetable" class="panel">
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="tt-search" placeholder="Search course, room, invigilator…" oninput="renderTimetable()">
+          </div>
+          <select id="tt-filter-status" onchange="renderTimetable()" style="width:140px">
+            <option value="">All Statuses</option>
+            <option value="PENDING">Pending</option>
+            <option value="SENT">Sent</option>
+            <option value="ERROR">Error</option>
+          </select>
+          <select id="tt-filter-time" onchange="renderTimetable()" style="width:130px">
+            <option value="">AM &amp; PM</option>
+            <option value="9:00 AM">Morning (9 AM)</option>
+            <option value="1:00 PM">Afternoon (1 PM)</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="openExamModal()">+ Add Exam</button>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>Date</th><th>Time</th><th>Code</th><th>Course Name</th>
+                  <th># Stu.</th><th>Room</th><th>Invigilator 1</th><th>Invigilator 2</th>
+                  <th>Lecturer</th><th>Status</th><th>Actions</th>
+                </tr></thead>
+                <tbody id="tt-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ ROSTER ══ -->
+      <div id="panel-roster" class="panel">
+        <div class="search-bar">
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="roster-search" placeholder="Search name or email…" oninput="renderRoster()">
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openRosterModal()">+ Add Lecturer</button>
+        </div>
+        <div class="card">
+          <div class="card-body" style="padding:0">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr><th>Name</th><th>Email</th><th>Calendar ID</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="roster-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ NOTIFY ══ -->
+      <div id="panel-notify" class="panel">
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-header">
+            <div class="card-title">📧 Send Invigilation Notifications</div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-ghost btn-sm" onclick="selectAllNotify(true)">Select All</button>
+              <button class="btn btn-ghost btn-sm" onclick="selectAllNotify(false)">Deselect All</button>
+            </div>
+          </div>
+          <div class="card-body" style="padding:0 20px">
+            <div id="notify-list"></div>
+          </div>
+          <div style="padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;background:#fafbfd">
+            <button class="btn btn-gold" onclick="sendSelected()">✉️ Send to Selected</button>
+            <button class="btn btn-primary" onclick="sendAll()">Send All Pending</button>
+            <span style="font-size:12px;color:var(--text-faint);margin-left:auto" id="notify-count-label"></span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="card-title">📋 Email Preview</div></div>
+          <div class="card-body">
+            <p style="font-size:13px;color:var(--text-muted);margin-bottom:16px">This is the email invigilators will receive. Select an exam above and click the preview icon to see it populated.</p>
+            <div id="email-preview-box" style="border:1px solid var(--border);border-radius:8px;overflow:hidden;font-family:Arial,sans-serif;font-size:13px">
+              <div style="background:#0f2744;padding:18px 24px">
+                <div style="color:#fff;font-size:17px;font-weight:600">📋 Invigilation Assignment</div>
+                <div style="color:#a8c4e0;font-size:12px;margin-top:4px">Clarence Fitzroy Bryant College · Semester II · AY 2025/2026</div>
+              </div>
+              <div style="padding:20px 24px">
+                <p style="margin:0 0 14px">Dear <strong>[Lecturer Name]</strong>,</p>
+                <p style="margin:0 0 18px;color:#444">You have been assigned to invigilate the following examination. A calendar event has been added to your Google Calendar automatically.</p>
+                <table style="width:100%;border-collapse:collapse;border:1px solid #dee2e6;border-radius:6px;overflow:hidden">
+                  <tr style="background:#eaf2fb"><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e;width:36%;border-bottom:1px solid #dee2e6">Course Code</td><td style="padding:9px 14px;border-bottom:1px solid #dee2e6">[CODE]</td></tr>
+                  <tr><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e;border-bottom:1px solid #dee2e6">Course Name</td><td style="padding:9px 14px;border-bottom:1px solid #dee2e6">[COURSE NAME]</td></tr>
+                  <tr style="background:#eaf2fb"><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e;border-bottom:1px solid #dee2e6">Date &amp; Time</td><td style="padding:9px 14px;border-bottom:1px solid #dee2e6">[DATE] at [TIME]</td></tr>
+                  <tr><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e;border-bottom:1px solid #dee2e6">Room / Venue</td><td style="padding:9px 14px;border-bottom:1px solid #dee2e6">[ROOM]</td></tr>
+                  <tr style="background:#eaf2fb"><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e;border-bottom:1px solid #dee2e6">No. of Students</td><td style="padding:9px 14px;border-bottom:1px solid #dee2e6">[#]</td></tr>
+                  <tr><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e;border-bottom:1px solid #dee2e6">Co-Invigilator(s)</td><td style="padding:9px 14px;border-bottom:1px solid #dee2e6">[CO-INVIGS]</td></tr>
+                  <tr style="background:#eaf2fb"><td style="padding:9px 14px;font-weight:bold;color:#1a3c5e">Lecturer</td><td style="padding:9px 14px">[LECTURER]</td></tr>
+                </table>
+                <div style="background:#fff8e1;border-left:4px solid #f5a623;padding:11px 14px;margin-top:16px;border-radius:4px;font-size:12px">
+                  ⚠️ Please arrive <strong>15 minutes before</strong> the scheduled start time to collect materials and sign the invigilation register.
+                </div>
+                <p style="font-size:11px;color:#888;margin-top:16px;border-top:1px solid #eee;padding-top:12px">Automated notification — CFBC Examinations System. Do not reply to this email.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ LOG ══ -->
+      <div id="panel-log" class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div style="font-size:13px;color:var(--text-muted)" id="log-count"></div>
+          <button class="btn btn-ghost btn-sm" onclick="clearLog()">Clear Log</button>
+        </div>
+        <div class="card">
+          <div class="card-body" id="log-body" style="max-height:600px;overflow-y:auto"></div>
+        </div>
+      </div>
+
+      <!-- ══ SETTINGS ══ -->
+      <div id="panel-settings" class="panel">
+        <div style="max-width:620px">
+
+          <!-- API Connection -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title">🔗 Backend Connection</div>
+              <span id="conn-status-badge" class="badge badge-pending">Not checked</span>
+            </div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label>Backend URL</label>
+                  <div style="display:flex;gap:8px">
+                    <input type="text" id="s-api-url" placeholder="http://tekii.org:3005" style="flex:1">
+                    <button class="btn btn-ghost" onclick="testConnection()">Test</button>
+                  </div>
+                  <div class="form-hint">The URL where your Node.js backend is running on tekii.org</div>
+                </div>
+              </div>
+              <div id="conn-result" style="margin-top:12px;font-size:13px;display:none"></div>
+            </div>
+          </div>
+
+          <!-- SMTP Settings -->
+          <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+              <div class="card-title">📧 SMTP Email Settings</div>
+            </div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-grid form-grid-2">
+                  <div class="form-group">
+                    <label>SMTP Host</label>
+                    <input type="text" id="s-smtp-host" placeholder="smtp.gmail.com">
+                  </div>
+                  <div class="form-grid form-grid-2" style="gap:8px">
+                    <div class="form-group">
+                      <label>Port</label>
+                      <input type="number" id="s-smtp-port" placeholder="587">
+                    </div>
+                    <div class="form-group">
+                      <label>Secure (SSL)</label>
+                      <select id="s-smtp-secure">
+                        <option value="false">No (TLS/STARTTLS)</option>
+                        <option value="true">Yes (SSL port 465)</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-grid form-grid-2">
+                  <div class="form-group">
+                    <label>Email / Username</label>
+                    <input type="email" id="s-smtp-user" placeholder="clientmon@gmail.com">
+                  </div>
+                  <div class="form-group">
+                    <label>App Password</label>
+                    <input type="password" id="s-smtp-pass" placeholder="Google App Password">
+                    <div class="form-hint">Use a Gmail App Password, not your regular password.</div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Sender Display Name</label>
+                  <input type="text" id="s-smtp-name" placeholder="CFBC Examinations Office">
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+                <button class="btn btn-primary" onclick="saveSmtp()">Save SMTP Settings</button>
+                <button class="btn btn-ghost" onclick="testSmtp()">Send Test Email</button>
+              </div>
+              <div id="smtp-result" style="margin-top:12px;font-size:13px;display:none"></div>
+            </div>
+          </div>
+
+          <!-- Send mode -->
+          <div class="card">
+            <div class="card-header"><div class="card-title">🔧 Send Mode</div></div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Notification Mode</label>
+                <select id="s-send-mode" onchange="saveSendMode()">
+                  <option value="live">Live — send real emails via backend</option>
+                  <option value="simulate">Simulate — log only, no emails sent</option>
+                </select>
+                <div class="form-hint">Use Simulate mode for demos. Switch to Live when ready to go live.</div>
+              </div>
+              <div id="mode-banner" style="margin-top:12px;padding:10px 14px;border-radius:6px;font-size:13px;font-weight:500;display:none"></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ══ EXAM MODAL ══ -->
+<div class="overlay" id="exam-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="exam-modal-title">Add Exam</div>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('exam-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="f-date">
+          </div>
+          <div class="form-group">
+            <label>Time</label>
+            <select id="f-time">
+              <option value="9:00 AM">9:00 AM (Morning)</option>
+              <option value="1:00 PM">1:00 PM (Afternoon)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Course Code</label>
+            <div class="combo-wrap" id="combo-code">
+              <input type="text" id="f-code" placeholder="e.g. COMP1003" autocomplete="off">
+              <button class="combo-clear" id="f-code-clear" tabindex="-1">✕</button>
+              <span class="combo-arrow">▾</span>
+              <div class="combo-dropdown" id="f-code-drop"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Course Name <span style="font-weight:400;color:var(--text-faint);font-size:11px">— auto-fills when code is selected</span></label>
+          <input type="text" id="f-name" placeholder="e.g. Computer Science I">
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>No. of Students</label>
+            <input type="number" id="f-students" placeholder="0" min="1">
+          </div>
+          <div class="form-group">
+            <label>Room / Venue</label>
+            <div class="combo-wrap" id="combo-room">
+              <input type="text" id="f-room" placeholder="Search or pick a room…" autocomplete="off">
+              <button class="combo-clear" id="f-room-clear" tabindex="-1">✕</button>
+              <span class="combo-arrow">▾</span>
+              <div class="combo-dropdown" id="f-room-drop"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>Invigilator 1</label>
+            <div class="combo-wrap" id="combo-inv1">
+              <input type="text" id="f-inv1" placeholder="Search lecturer…" autocomplete="off">
+              <button class="combo-clear" id="f-inv1-clear" tabindex="-1">✕</button>
+              <span class="combo-arrow">▾</span>
+              <div class="combo-dropdown" id="f-inv1-drop"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Invigilator 2 <span style="font-weight:400;color:var(--text-faint)">(optional)</span></label>
+            <div class="combo-wrap" id="combo-inv2">
+              <input type="text" id="f-inv2" placeholder="Search lecturer…" autocomplete="off">
+              <button class="combo-clear" id="f-inv2-clear" tabindex="-1">✕</button>
+              <span class="combo-arrow">▾</span>
+              <div class="combo-dropdown" id="f-inv2-drop"></div>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Lecturer <span style="font-weight:400;color:var(--text-faint);font-size:11px">— the course lecturer (not the invigilator)</span></label>
+          <div class="combo-wrap" id="combo-lecturer">
+            <input type="text" id="f-lecturer" placeholder="Search lecturer…" autocomplete="off">
+            <button class="combo-clear" id="f-lecturer-clear" tabindex="-1">✕</button>
+            <span class="combo-arrow">▾</span>
+            <div class="combo-dropdown" id="f-lecturer-drop"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('exam-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExam()">Save Exam</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ROSTER MODAL ══ -->
+<div class="overlay" id="roster-modal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title" id="roster-modal-title">Add Lecturer</div>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('roster-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="r-name" placeholder="e.g. Enoete Inanga">
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="r-email" placeholder="e.g. enoete.inanga@cfbc.edu.kn">
+          <div class="form-hint">Must be a valid Google Workspace address for calendar integration.</div>
+        </div>
+        <div class="form-group">
+          <label>Calendar ID <span style="font-weight:400;color:var(--text-faint)">(usually same as email)</span></label>
+          <input type="text" id="r-calid" placeholder="enoete.inanga@cfbc.edu.kn">
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="r-active">
+            <option value="YES">Active</option>
+            <option value="NO">Inactive</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('roster-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveRoster()">Save Lecturer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SEND CONFIRM MODAL ══ -->
+<div class="overlay" id="send-modal">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title">Confirm — Send Notifications</div>
+      <button class="btn btn-ghost btn-icon" onclick="closeModal('send-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:var(--text-muted);margin-bottom:16px" id="send-confirm-msg"></p>
+      <div style="background:var(--amber-light);border-left:3px solid var(--amber);padding:12px 14px;border-radius:6px;font-size:13px">
+        ⚠️ This will send emails and create Google Calendar events for each assigned invigilator. This action cannot be undone.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('send-modal')">Cancel</button>
+      <button class="btn btn-gold" onclick="executeSend()">✉️ Send Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// DATA STORE — persisted in localStorage
+// ══════════════════════════════════════════════
+const STORE_KEY = 'cfbc_invig_v1';
+
+const DEFAULT_ROSTER = [
+  {id:r(), name:"Ajayi Dublin",        email:"ajayi.dublin@cfbc.edu.kn",        calId:"ajayi.dublin@cfbc.edu.kn",        active:"YES"},
+  {id:r(), name:"Anic Bruno",          email:"anic.bruno@cfbc.edu.kn",          calId:"anic.bruno@cfbc.edu.kn",          active:"YES"},
+  {id:r(), name:"Azard Gumbs",         email:"azard.gumbs@cfbc.edu.kn",         calId:"azard.gumbs@cfbc.edu.kn",         active:"YES"},
+  {id:r(), name:"Cameron Gill",        email:"cameron.gill@cfbc.edu.kn",        calId:"cameron.gill@cfbc.edu.kn",        active:"YES"},
+  {id:r(), name:"Chesley Manners",     email:"chesley.manners@cfbc.edu.kn",     calId:"chesley.manners@cfbc.edu.kn",     active:"YES"},
+  {id:r(), name:"Claudia Walwyn",      email:"claudia.walwyn@cfbc.edu.kn",      calId:"claudia.walwyn@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Cliffette Isaac",     email:"cliffette.isaac@cfbc.edu.kn",     calId:"cliffette.isaac@cfbc.edu.kn",     active:"YES"},
+  {id:r(), name:"Cyndi Joseph",        email:"cyndi.joseph@cfbc.edu.kn",        calId:"cyndi.joseph@cfbc.edu.kn",        active:"YES"},
+  {id:r(), name:"Damion Wilson",       email:"damion.wilson@cfbc.edu.kn",       calId:"damion.wilson@cfbc.edu.kn",       active:"YES"},
+  {id:r(), name:"Deitra Wharton",      email:"deitra.wharton@cfbc.edu.kn",      calId:"deitra.wharton@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Devon Harris",        email:"devon.harris@cfbc.edu.kn",        calId:"devon.harris@cfbc.edu.kn",        active:"YES"},
+  {id:r(), name:"Ellsworth Diamond",   email:"ellsworth.diamond@cfbc.edu.kn",   calId:"ellsworth.diamond@cfbc.edu.kn",   active:"YES"},
+  {id:r(), name:"Enoete Inanga",       email:"enoete.inanga@cfbc.edu.kn",       calId:"enoete.inanga@cfbc.edu.kn",       active:"YES"},
+  {id:r(), name:"Glenville Byron",     email:"glenville.byron@cfbc.edu.kn",     calId:"glenville.byron@cfbc.edu.kn",     active:"YES"},
+  {id:r(), name:"Howard Richardson",   email:"howard.richardson@cfbc.edu.kn",   calId:"howard.richardson@cfbc.edu.kn",   active:"YES"},
+  {id:r(), name:"Ian Morson",          email:"ian.morson@cfbc.edu.kn",          calId:"ian.morson@cfbc.edu.kn",          active:"YES"},
+  {id:r(), name:"John Samuel",         email:"john.samuel@cfbc.edu.kn",         calId:"john.samuel@cfbc.edu.kn",         active:"YES"},
+  {id:r(), name:"Judy Rogers",         email:"judy.rogers@cfbc.edu.kn",         calId:"judy.rogers@cfbc.edu.kn",         active:"YES"},
+  {id:r(), name:"Kamara Louisy",       email:"kamara.louisy@cfbc.edu.kn",       calId:"kamara.louisy@cfbc.edu.kn",       active:"YES"},
+  {id:r(), name:"Keicharm Blanchette", email:"keicharm.blanchette@cfbc.edu.kn", calId:"keicharm.blanchette@cfbc.edu.kn", active:"YES"},
+  {id:r(), name:"Kewin Richards",      email:"kewin.richards@cfbc.edu.kn",      calId:"kewin.richards@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Kyle Flanders",       email:"kyle.flanders@cfbc.edu.kn",       calId:"kyle.flanders@cfbc.edu.kn",       active:"YES"},
+  {id:r(), name:"Leroy Pemberton",     email:"leroy.pemberton@cfbc.edu.kn",     calId:"leroy.pemberton@cfbc.edu.kn",     active:"YES"},
+  {id:r(), name:"Marcia Jeffers",      email:"marcia.jeffers@cfbc.edu.kn",      calId:"marcia.jeffers@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Mulunesh Collins",    email:"mulunesh.collins@cfbc.edu.kn",    calId:"mulunesh.collins@cfbc.edu.kn",    active:"YES"},
+  {id:r(), name:"Patricia Caesar",     email:"patricia.caesar@cfbc.edu.kn",     calId:"patricia.caesar@cfbc.edu.kn",     active:"YES"},
+  {id:r(), name:"Philip Etienne",      email:"philip.etienne@cfbc.edu.kn",      calId:"philip.etienne@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Quincy Edwards",      email:"quincy.edwards@cfbc.edu.kn",      calId:"quincy.edwards@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Rozna Rogers",        email:"rozna.rogers@cfbc.edu.kn",        calId:"rozna.rogers@cfbc.edu.kn",        active:"YES"},
+  {id:r(), name:"Seana Williams",      email:"seana.williams@cfbc.edu.kn",      calId:"seana.williams@cfbc.edu.kn",      active:"YES"},
+  {id:r(), name:"Sherry Woods",        email:"sherry.woods@cfbc.edu.kn",        calId:"sherry.woods@cfbc.edu.kn",        active:"YES"},
+  {id:r(), name:"Stafford Pemberton",  email:"stafford.pemberton@cfbc.edu.kn",  calId:"stafford.pemberton@cfbc.edu.kn",  active:"YES"},
+  {id:r(), name:"Virginie Jouffrey",   email:"virginie.jouffrey@cfbc.edu.kn",   calId:"virginie.jouffrey@cfbc.edu.kn",   active:"YES"},
+];
+
+const DEFAULT_EXAMS = [
+  {id:r(),date:"2026-04-27",time:"9:00 AM", code:"AGSS1112",courseName:"Introduction to Livestock Agriculture",students:14, room:"NJBLVC2",      inv1:"Ajayi Dublin",       inv2:"Cameron Gill",      lecturer:"Kimiko Liburd",      status:"PENDING"},
+  {id:r(),date:"2026-04-27",time:"1:00 PM", code:"ELEC1004", courseName:"Electrical Principles II",              students:16, room:"NJBLVC2",      inv1:"Mulunesh Collins",   inv2:"Kewin Richards",    lecturer:"Wingrove Rouse",     status:"PENDING"},
+  {id:r(),date:"2026-04-28",time:"9:00 AM", code:"ACCT2001", courseName:"Financial Accounting I",                students:72, room:"C3-C4, C5",    inv1:"Deitra Wharton",     inv2:"Claudia Walwyn",    lecturer:"Kezron Lake",        status:"PENDING"},
+  {id:r(),date:"2026-04-28",time:"1:00 PM", code:"MGMT1001", courseName:"Principles of Management",              students:68, room:"Multipurpose",  inv1:"Cliffette Isaac",    inv2:"Kamara Louisy",     lecturer:"Alexis Carvey",      status:"PENDING"},
+  {id:r(),date:"2026-04-28",time:"9:00 AM", code:"COMP1003", courseName:"Computer Science I",                    students:14, room:"203",           inv1:"Ian Morson",         inv2:"John Samuel",       lecturer:"Enoete Inanga",      status:"PENDING"},
+  {id:r(),date:"2026-04-29",time:"9:00 AM", code:"MGMT1003", courseName:"Business Communication",                students:70, room:"C3-C4, C5",    inv1:"Howard Richardson",  inv2:"Sherry Woods",      lecturer:"Patrice Harris",     status:"PENDING"},
+  {id:r(),date:"2026-04-30",time:"1:00 PM", code:"ENGL1042", courseName:"English & Communications II",           students:53, room:"C3-C4",         inv1:"Stafford Pemberton", inv2:"Cliffette Isaac",   lecturer:"Sherry Woods",       status:"PENDING"},
+  {id:r(),date:"2026-05-01",time:"9:00 AM", code:"TVTM1002", courseName:"Technical Mathematics II",              students:42, room:"C3-C4",         inv1:"Cameron Gill",       inv2:"Glenville Byron",   lecturer:"Mulunesh Collins",   status:"PENDING"},
+  {id:r(),date:"2026-05-06",time:"9:00 AM", code:"PMAT1001", courseName:"Practical Mathematics",                 students:83, room:"C3-C4, C5",    inv1:"Mulunesh Collins",   inv2:"Claudia Walwyn",    lecturer:"Bevis Brookes",      status:"PENDING"},
+  {id:r(),date:"2026-05-06",time:"1:00 PM", code:"MGMT2005", courseName:"Fundamentals of Marketing",             students:75, room:"Multipurpose",  inv1:"Quincy Edwards",     inv2:"Glenville Byron",   lecturer:"Diana Louard",       status:"PENDING"},
+  {id:r(),date:"2026-05-07",time:"9:00 AM", code:"SAFE1000", courseName:"Occupational Health & Safety",          students:24, room:"NJBLVC2",       inv1:"Kyle Flanders",      inv2:"Rozna Rogers",      lecturer:"Fidel O'Flaherty",   status:"PENDING"},
+  {id:r(),date:"2026-05-08",time:"9:00 AM", code:"HMAT2001", courseName:"Maths & Statistics",                    students:60, room:"C3-C4",         inv1:"Howard Richardson",  inv2:"Cyndi Joseph",      lecturer:"Mulunesh Collins",   status:"PENDING"},
+  {id:r(),date:"2026-05-11",time:"9:00 AM", code:"RFAC2000", courseName:"Commercial Refrigeration & AC",         students:7,  room:"Workshop (ACR)",inv1:"Kewin Richards",     inv2:"Ellsworth Diamond", lecturer:"Mark Caesar",        status:"PENDING"},
+  {id:r(),date:"2026-05-12",time:"9:00 AM", code:"RFAC2104", courseName:"Comm. Refrigeration (Practical)",       students:7,  room:"Workshop (ACR)",inv1:"Chesley Manners",    inv2:"Virginie Jouffrey", lecturer:"Mark Caesar",        status:"PENDING"},
+  {id:r(),date:"2026-05-13",time:"9:00 AM", code:"MGMT1004", courseName:"Critical Thinking",                     students:12, room:"NJBLVC3",       inv1:"Mulunesh Collins",   inv2:"Kamara Louisy",     lecturer:"Sherry Woods",       status:"PENDING"},
+  {id:r(),date:"2026-05-13",time:"1:00 PM", code:"OADM2002", courseName:"Caribbean Politics and Society",        students:10, room:"NJBLVC2",       inv1:"Leroy Pemberton",    inv2:"",                  lecturer:"Cameron Gill",       status:"PENDING"},
+  {id:r(),date:"2026-05-14",time:"9:00 AM", code:"AHDT2021", courseName:"Resource Management II",                students:10, room:"NJBLVC2",       inv1:"Deitra Wharton",     inv2:"Judy Rogers",       lecturer:"Jeremy Alexis",      status:"PENDING"},
+  {id:r(),date:"2026-05-14",time:"1:00 PM", code:"ECON1001", courseName:"Elements of Micro Economics",           students:84, room:"C3-C4, C5",    inv1:"Seana Williams",     inv2:"Cyndi Joseph",      lecturer:"Judy Rogers",        status:"PENDING"},
+  {id:r(),date:"2026-05-15",time:"9:00 AM", code:"OADM2004", courseName:"Office Administration II",              students:69, room:"C3-C4, C5",    inv1:"Marcia Jeffers",     inv2:"Philip Etienne",    lecturer:"Diana Louard",       status:"PENDING"},
+  {id:r(),date:"2026-05-15",time:"1:00 PM", code:"HLAW2001", courseName:"Hospitality Law",                       students:21, room:"C3-C4",         inv1:"Damion Wilson",      inv2:"Devon Harris",      lecturer:"Kamara Louisy",      status:"PENDING"},
+];
+
+function r() { return Math.random().toString(36).slice(2,9); }
+
+let state = loadState();
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e){}
+  return { exams: DEFAULT_EXAMS, roster: DEFAULT_ROSTER, log: [] };
+}
+function save() {
+  localStorage.setItem(STORE_KEY, JSON.stringify(state));
+  refreshAll();
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════════════
+const TITLES = {
+  dashboard:'Dashboard', timetable:'Timetable',
+  roster:'Lecturer Roster', notify:'Send Notifications',
+  log:'Activity Log', settings:'Settings'
+};
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + name + "'"))
+      n.classList.add('active');
+  });
+  document.getElementById('topbar-title').textContent = TITLES[name] || name;
+  if (name === 'timetable') renderTimetable();
+  if (name === 'roster')    renderRoster();
+  if (name === 'notify')    renderNotify();
+  if (name === 'log')       renderLog();
+  if (name === 'settings')  renderSettings();
+  if (name === 'dashboard') renderDashboard();
+}
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+function renderDashboard() {
+  const exams   = state.exams;
+  const pending = exams.filter(e => e.status === 'PENDING').length;
+  const sent    = exams.filter(e => e.status === 'SENT').length;
+  const active  = state.roster.filter(r => r.active === 'YES').length;
+
+  document.getElementById('stat-total').textContent   = exams.length;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-sent').textContent    = sent;
+  document.getElementById('stat-roster').textContent  = active;
+  document.getElementById('pending-badge').textContent = pending;
+
+  // Upcoming — next 7 days
+  const now   = new Date();
+  const week  = new Date(now.getTime() + 7*24*60*60*1000);
+  const upcoming = exams
+    .filter(e => { const d = new Date(e.date); return d >= now && d <= week; })
+    .sort((a,b) => a.date.localeCompare(b.date));
+
+  const tbody = document.getElementById('dash-upcoming-body');
+  if (upcoming.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="icon">📅</div><div class="msg">No exams in the next 7 days</div></div></td></tr>';
+  } else {
+    tbody.innerHTML = upcoming.map(e => `
+      <tr>
+        <td>${fmtDate(e.date)}</td>
+        <td><span class="badge ${e.time==='9:00 AM'?'badge-am':'badge-pm'}">${e.time}</span></td>
+        <td><strong>${e.code}</strong><br><span style="color:var(--text-muted);font-size:12px">${e.courseName}</span></td>
+        <td>${e.room}</td>
+        <td style="font-size:12px">${[e.inv1,e.inv2].filter(Boolean).join('<br>')}</td>
+        <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
+      </tr>`).join('');
+  }
+
+  // Recent log
+  const logEl = document.getElementById('dash-log');
+  const recent = state.log.slice(-5).reverse();
+  if (recent.length === 0) {
+    logEl.innerHTML = '<div class="empty"><div class="icon">📋</div><div class="msg">No activity yet</div></div>';
+  } else {
+    logEl.innerHTML = recent.map(l => `
+      <div class="log-entry">
+        <div class="log-dot ${l.type}"></div>
+        <div><div style="font-size:13px">${l.msg}</div><div class="log-meta">${l.time}</div></div>
+      </div>`).join('');
+  }
+}
+
+// ══════════════════════════════════════════════
+// TIMETABLE
+// ══════════════════════════════════════════════
+function renderTimetable() {
+  const q      = (document.getElementById('tt-search').value || '').toLowerCase();
+  const status = document.getElementById('tt-filter-status').value;
+  const time   = document.getElementById('tt-filter-time').value;
+
+  let exams = state.exams.filter(e => {
+    if (status && e.status !== status) return false;
+    if (time   && e.time   !== time)   return false;
+    if (q) {
+      const hay = [e.code, e.courseName, e.room, e.inv1, e.inv2, e.lecturer].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  }).sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
+
+  const tbody = document.getElementById('tt-body');
+  if (exams.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">📅</div><div class="msg">No exams match your filter</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = exams.map(e => `
+    <tr>
+      <td style="white-space:nowrap">${fmtDate(e.date)}</td>
+      <td><span class="badge ${e.time==='9:00 AM'?'badge-am':'badge-pm'}">${e.time}</span></td>
+      <td><strong>${e.code}</strong></td>
+      <td>${e.courseName}</td>
+      <td style="text-align:center">${e.students}</td>
+      <td>${e.room}</td>
+      <td style="font-size:12px">${e.inv1 || '—'}</td>
+      <td style="font-size:12px">${e.inv2 || '—'}</td>
+      <td style="font-size:12px">${e.lecturer}</td>
+      <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm btn-icon" title="Edit" onclick="openExamModal('${e.id}')">✏️</button>
+        <button class="btn btn-ghost btn-sm btn-icon" title="Delete" onclick="deleteExam('${e.id}')">🗑️</button>
+        ${e.status==='PENDING'?`<button class="btn btn-teal btn-sm" onclick="quickSend('${e.id}')">✉️</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// ROSTER
+// ══════════════════════════════════════════════
+function renderRoster() {
+  const q = (document.getElementById('roster-search').value || '').toLowerCase();
+  const list = state.roster.filter(p => !q || (p.name + p.email).toLowerCase().includes(q));
+  const tbody = document.getElementById('roster-body');
+  if (list.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">👥</div><div class="msg">No lecturers found</div></div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = list.map(p => `
+    <tr>
+      <td><strong>${p.name}</strong></td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px">${p.email}</td>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;color:var(--text-faint)">${p.calId}</td>
+      <td><span class="badge ${p.active==='YES'?'badge-sent':'badge-error'}">${p.active==='YES'?'Active':'Inactive'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="openRosterModal('${p.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoster('${p.id}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════
+// NOTIFY PANEL
+// ══════════════════════════════════════════════
+function renderNotify() {
+  const pending = state.exams.filter(e => e.status === 'PENDING')
+    .sort((a,b) => a.date.localeCompare(b.date));
+  const el = document.getElementById('notify-list');
+  if (pending.length === 0) {
+    el.innerHTML = '<div class="empty"><div class="icon">✅</div><div class="msg">All exams have been notified!</div></div>';
+    document.getElementById('notify-count-label').textContent = '';
+    return;
+  }
+  el.innerHTML = pending.map(e => `
+    <div class="notify-row">
+      <input type="checkbox" class="notify-check notify-cb" data-id="${e.id}" checked onchange="updateNotifyCount()">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:13px">${e.code} — ${e.courseName}</div>
+        <div style="font-size:12px;color:var(--text-muted)">${fmtDate(e.date)} · ${e.time} · ${e.room} · ${e.students} students</div>
+        <div style="font-size:12px;color:var(--text-faint)">Invigilators: ${[e.inv1,e.inv2].filter(Boolean).join(', ') || 'None assigned'}</div>
+      </div>
+      <span class="badge badge-${e.time==='9:00 AM'?'am':'pm'}">${e.time==='9:00 AM'?'AM':'PM'}</span>
+    </div>`).join('');
+  updateNotifyCount();
+}
+
+function updateNotifyCount() {
+  const checked = document.querySelectorAll('.notify-cb:checked').length;
+  document.getElementById('notify-count-label').textContent = checked + ' exam(s) selected';
+}
+
+function selectAllNotify(val) {
+  document.querySelectorAll('.notify-cb').forEach(cb => cb.checked = val);
+  updateNotifyCount();
+}
+
+let _sendQueue = [];
+function sendSelected() {
+  const ids = [...document.querySelectorAll('.notify-cb:checked')].map(cb => cb.dataset.id);
+  if (!ids.length) { toast('No exams selected', 'warning'); return; }
+  _sendQueue = ids;
+  document.getElementById('send-confirm-msg').textContent =
+    `You are about to send notifications for ${ids.length} exam(s) to their assigned invigilators.`;
+  openModal('send-modal');
+}
+function sendAll() {
+  _sendQueue = state.exams.filter(e => e.status === 'PENDING').map(e => e.id);
+  if (!_sendQueue.length) { toast('No pending exams', 'warning'); return; }
+  document.getElementById('send-confirm-msg').textContent =
+    `You are about to send notifications for all ${_sendQueue.length} pending exam(s).`;
+  openModal('send-modal');
+}
+function executeSend() {
+  closeModal('send-modal');
+  const mode   = localStorage.getItem('cfbc_send_mode') || 'simulate';
+  const apiUrl = (localStorage.getItem('cfbc_api_url') || '').replace(/\/$/, '');
+
+  if (mode === 'live' && !apiUrl) {
+    toast('Set your backend URL in Settings first', 'warning');
+    showPanel('settings');
+    return;
+  }
+
+  // Build assignment list
+  const assignments = [];
+  _sendQueue.forEach(id => {
+    const exam = state.exams.find(e => e.id === id);
+    if (!exam) return;
+    const invigilators = [exam.inv1, exam.inv2].filter(Boolean);
+    invigilators.forEach(name => {
+      const person = state.roster.find(p => p.name.toLowerCase() === name.toLowerCase());
+      const coInvigs = invigilators.filter(n => n !== name).join(', ') || 'None';
+      assignments.push({
+        person: person
+          ? { name: person.name, email: person.email }
+          : { name, email: null },
+        exam: {
+          code:       exam.code,
+          courseName: exam.courseName,
+          date:       fmtDate(exam.date),
+          time:       exam.time,
+          room:       exam.room,
+          students:   exam.students,
+          coInvigs,
+          lecturer:   exam.lecturer,
+        },
+        examId: id,
+        type: 'notification',
+      });
+    });
+  });
+
+  if (mode === 'simulate') {
+    // Simulate mode — mark sent locally, log everything
+    _sendQueue.forEach(id => {
+      const exam = state.exams.find(e => e.id === id);
+      if (!exam) return;
+      exam.status = 'SENT';
+      [exam.inv1, exam.inv2].filter(Boolean).forEach(name => {
+        addLog(`[SIMULATED] Email to ${name} for ${exam.code}`, 'info');
+      });
+    });
+    save();
+    toast(`✅ Simulated ${_sendQueue.length} exam(s) — no real emails sent`, 'info');
+    renderNotify();
+    return;
+  }
+
+  // Live mode — POST to backend
+  toast('Sending…', 'info');
+  fetch(`${apiUrl}/notify`, {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ assignments }),
+  })
+  .then(r => r.json())
+  .then(data => {
+    // Mark sent exams
+    _sendQueue.forEach(id => {
+      const exam = state.exams.find(e => e.id === id);
+      if (!exam) return;
+      // Only mark SENT if at least one email for this exam succeeded
+      const thisExamResults = data.results?.filter(r =>
+        assignments.find(a => a.examId === id && a.person.email === r.email)
+      );
+      const anyOk = thisExamResults?.some(r => r.ok);
+      exam.status = anyOk ? 'SENT' : 'ERROR';
+    });
+
+    data.results?.forEach(r => {
+      if (r.ok) addLog(`✅ Email sent to ${r.name} (${r.email})`, 'success');
+      else      addLog(`❌ Failed: ${r.name} — ${r.error}`, 'error');
+    });
+
+    save();
+    const msg = `✅ ${data.sent} sent${data.failed ? `, ❌ ${data.failed} failed` : ''}`;
+    toast(msg, data.failed ? 'warning' : 'success');
+    renderNotify();
+  })
+  .catch(err => {
+    toast('Backend unreachable — check Settings', 'error');
+    addLog(`Backend error: ${err.message}`, 'error');
+    save();
+  });
+}
+
+function quickSend(id) {
+  _sendQueue = [id];
+  const exam = state.exams.find(e => e.id === id);
+  document.getElementById('send-confirm-msg').textContent =
+    `Send notification for ${exam.code} — ${exam.courseName} on ${fmtDate(exam.date)}?`;
+  openModal('send-modal');
+}
+
+// ══════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════
+function renderLog() {
+  const el = document.getElementById('log-body');
+  document.getElementById('log-count').textContent = state.log.length + ' entries';
+  if (!state.log.length) {
+    el.innerHTML = '<div class="empty"><div class="icon">📋</div><div class="msg">No activity logged yet</div></div>';
+    return;
+  }
+  el.innerHTML = [...state.log].reverse().map(l => `
+    <div class="log-entry">
+      <div class="log-dot ${l.type}"></div>
+      <div><div style="font-size:13px">${l.msg}</div><div class="log-meta">${l.time}</div></div>
+    </div>`).join('');
+}
+function addLog(msg, type='info') {
+  state.log.push({ msg, type, time: new Date().toLocaleString() });
+}
+function clearLog() {
+  if (!confirm('Clear all activity log entries?')) return;
+  state.log = [];
+  save();
+  renderLog();
+}
+
+// ══════════════════════════════════════════════
+// COMBOBOX ENGINE
+// ══════════════════════════════════════════════
+const ROOMS = [
+  'NJBLVC2','NJBLVC3','C3-C4','C5','C3-C4, C5','C3-C4, C6','C3-C4, C8',
+  'Multipurpose','203','203-204','RM 102','RM 103, RM 104',
+  'Workshop (ACR)','Workshop (AUTO)','Workshop (EE)',
+  'TVEMS Lab 1','TVEMS Lab 2','Main Computer Lab',
+  'OADM','KITCHEN','HOSP KITCHEN','DINING ROOM','WELDING WORKSHOP','ACCOMMODATION RM'
+];
+
+// combos registry: { inputId, dropId, clearId, items(), onSelect, allowFreeText }
+const _combos = {};
+
+function makeCombo({ inputId, dropId, clearId, getItems, onSelect, allowFreeText=true, subText }) {
+  const input = document.getElementById(inputId);
+  const drop  = document.getElementById(dropId);
+  const clear = document.getElementById(clearId);
+  let focusIdx = -1;
+
+  function getOptions(q) {
+    const items = getItems();
+    if (!q) return items;
+    return items.filter(it => {
+      const label = typeof it === 'string' ? it : it.label;
+      return label.toLowerCase().includes(q.toLowerCase());
+    });
+  }
+
+  function renderDrop(q) {
+    const opts = getOptions(q);
+    focusIdx = -1;
+    if (opts.length === 0) {
+      drop.innerHTML = allowFreeText
+        ? `<div class="combo-option no-match">No match — type to enter custom value</div>`
+        : `<div class="combo-option no-match">No results</div>`;
+    } else {
+      drop.innerHTML = opts.map((it, i) => {
+        const label = typeof it === 'string' ? it : it.label;
+        const sub   = (typeof it === 'object' && it.sub) ? `<span class="opt-sub">${it.sub}</span>` : '';
+        return `<div class="combo-option" data-val="${label}" data-idx="${i}">${label}${sub}</div>`;
+      }).join('');
+      drop.querySelectorAll('.combo-option').forEach(opt => {
+        opt.addEventListener('mousedown', e => {
+          e.preventDefault();
+          selectVal(opt.dataset.val);
+        });
+      });
+    }
+    drop.classList.add('open');
+  }
+
+  function selectVal(val) {
+    input.value = val;
+    drop.classList.remove('open');
+    clear.classList.toggle('visible', !!val);
+    if (onSelect) onSelect(val);
+  }
+
+  function moveFocus(dir) {
+    const opts = drop.querySelectorAll('.combo-option:not(.no-match)');
+    if (!opts.length) return;
+    opts[focusIdx]?.classList.remove('focused');
+    focusIdx = Math.max(0, Math.min(opts.length - 1, focusIdx + dir));
+    opts[focusIdx].classList.add('focused');
+    opts[focusIdx].scrollIntoView({ block: 'nearest' });
+  }
+
+  input.addEventListener('focus', () => renderDrop(input.value));
+  input.addEventListener('input', () => {
+    renderDrop(input.value);
+    clear.classList.toggle('visible', !!input.value);
+    if (onSelect && !input.value) onSelect('');
+  });
+  input.addEventListener('blur', () => setTimeout(() => drop.classList.remove('open'), 150));
+  input.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown') { e.preventDefault(); moveFocus(1); }
+    if (e.key === 'ArrowUp')   { e.preventDefault(); moveFocus(-1); }
+    if (e.key === 'Enter') {
+      const focused = drop.querySelector('.combo-option.focused');
+      if (focused && focused.dataset.val) { e.preventDefault(); selectVal(focused.dataset.val); }
+    }
+    if (e.key === 'Escape') drop.classList.remove('open');
+  });
+  clear.addEventListener('mousedown', e => {
+    e.preventDefault();
+    selectVal('');
+    input.focus();
+  });
+
+  _combos[inputId] = { selectVal, input };
+}
+
+function comboSet(inputId, val) {
+  if (_combos[inputId]) _combos[inputId].selectVal(val);
+  else document.getElementById(inputId).value = val;
+}
+function comboGet(inputId) {
+  return document.getElementById(inputId).value.trim();
+}
+
+// ══════════════════════════════════════════════
+// EXAM MODAL
+// ══════════════════════════════════════════════
+let _editExamId = null;
+let _combosInited = false;
+
+function initExamCombos() {
+  if (_combosInited) return;
+  _combosInited = true;
+
+  // Course Code → also shows course name as sub, auto-fills name+students
+  makeCombo({
+    inputId: 'f-code', dropId: 'f-code-drop', clearId: 'f-code-clear',
+    getItems: () => {
+      const seen = {};
+      return state.exams
+        .filter(e => { if (seen[e.code]) return false; seen[e.code]=true; return true; })
+        .sort((a,b) => a.code.localeCompare(b.code))
+        .map(e => ({ label: e.code, sub: e.courseName }));
+    },
+    onSelect: val => {
+      if (!val) return;
+      const match = state.exams.find(e => e.code === val);
+      if (match) {
+        document.getElementById('f-name').value = match.courseName;
+        if (!document.getElementById('f-students').value)
+          document.getElementById('f-students').value = match.students;
+      }
+    },
+    allowFreeText: true
+  });
+
+  // Room
+  makeCombo({
+    inputId: 'f-room', dropId: 'f-room-drop', clearId: 'f-room-clear',
+    getItems: () => {
+      // Merge static list + any custom rooms already in data
+      const custom = state.exams.map(e => e.room).filter(r => r && !ROOMS.includes(r));
+      return [...new Set([...ROOMS, ...custom])];
+    },
+    allowFreeText: true
+  });
+
+  // Invigilator 1
+  makeCombo({
+    inputId: 'f-inv1', dropId: 'f-inv1-drop', clearId: 'f-inv1-clear',
+    getItems: () => state.roster.filter(p => p.active==='YES').sort((a,b)=>a.name.localeCompare(b.name)).map(p=>p.name),
+    allowFreeText: false
+  });
+
+  // Invigilator 2
+  makeCombo({
+    inputId: 'f-inv2', dropId: 'f-inv2-drop', clearId: 'f-inv2-clear',
+    getItems: () => state.roster.filter(p => p.active==='YES').sort((a,b)=>a.name.localeCompare(b.name)).map(p=>p.name),
+    allowFreeText: false
+  });
+
+  // Lecturer — from roster (but also allows free text for external lecturers)
+  makeCombo({
+    inputId: 'f-lecturer', dropId: 'f-lecturer-drop', clearId: 'f-lecturer-clear',
+    getItems: () => state.roster.filter(p => p.active==='YES').sort((a,b)=>a.name.localeCompare(b.name)).map(p=>p.name),
+    allowFreeText: true
+  });
+}
+
+function openExamModal(id) {
+  _editExamId = id || null;
+  document.getElementById('exam-modal-title').textContent = id ? 'Edit Exam' : 'Add Exam';
+  initExamCombos();
+
+  if (id) {
+    const e = state.exams.find(x => x.id === id);
+    document.getElementById('f-date').value     = e.date;
+    document.getElementById('f-time').value     = e.time;
+    document.getElementById('f-students').value = e.students;
+    document.getElementById('f-name').value     = e.courseName;
+    comboSet('f-code',     e.code);
+    comboSet('f-room',     e.room);
+    comboSet('f-inv1',     e.inv1 || '');
+    comboSet('f-inv2',     e.inv2 || '');
+    comboSet('f-lecturer', e.lecturer);
+  } else {
+    document.getElementById('f-date').value     = '';
+    document.getElementById('f-time').value     = '9:00 AM';
+    document.getElementById('f-students').value = '';
+    document.getElementById('f-name').value     = '';
+    comboSet('f-code',     '');
+    comboSet('f-room',     '');
+    comboSet('f-inv1',     '');
+    comboSet('f-inv2',     '');
+    comboSet('f-lecturer', '');
+  }
+  openModal('exam-modal');
+}
+
+function saveExam() {
+  const data = {
+    date:       document.getElementById('f-date').value,
+    time:       document.getElementById('f-time').value,
+    code:       comboGet('f-code').toUpperCase(),
+    courseName: document.getElementById('f-name').value.trim(),
+    students:   parseInt(document.getElementById('f-students').value) || 0,
+    room:       comboGet('f-room'),
+    inv1:       comboGet('f-inv1'),
+    inv2:       comboGet('f-inv2'),
+    lecturer:   comboGet('f-lecturer'),
+  };
+  if (!data.date || !data.code || !data.courseName || !data.room) {
+    toast('Please fill in date, code, course name and room', 'warning'); return;
+  }
+  if (_editExamId) {
+    const idx = state.exams.findIndex(e => e.id === _editExamId);
+    state.exams[idx] = { ...state.exams[idx], ...data };
+    addLog(`Exam updated: ${data.code} — ${data.courseName}`, 'info');
+  } else {
+    state.exams.push({ id: r(), ...data, status: 'PENDING' });
+    addLog(`Exam added: ${data.code} — ${data.courseName}`, 'info');
+  }
+  save();
+  closeModal('exam-modal');
+  renderTimetable();
+  toast(_editExamId ? 'Exam updated' : 'Exam added ✓', 'success');
+}
+
+function deleteExam(id) {
+  const e = state.exams.find(x => x.id === id);
+  if (!confirm(`Delete ${e.code} — ${e.courseName}?`)) return;
+  state.exams = state.exams.filter(x => x.id !== id);
+  addLog(`Exam deleted: ${e.code}`, 'info');
+  save();
+  renderTimetable();
+  toast('Exam deleted', 'warning');
+}
+
+// ══════════════════════════════════════════════
+// ROSTER MODAL
+// ══════════════════════════════════════════════
+let _editRosterId = null;
+function openRosterModal(id) {
+  _editRosterId = id || null;
+  document.getElementById('roster-modal-title').textContent = id ? 'Edit Lecturer' : 'Add Lecturer';
+  if (id) {
+    const p = state.roster.find(x => x.id === id);
+    document.getElementById('r-name').value   = p.name;
+    document.getElementById('r-email').value  = p.email;
+    document.getElementById('r-calid').value  = p.calId;
+    document.getElementById('r-active').value = p.active;
+  } else {
+    document.getElementById('r-name').value   = '';
+    document.getElementById('r-email').value  = '';
+    document.getElementById('r-calid').value  = '';
+    document.getElementById('r-active').value = 'YES';
+  }
+  openModal('roster-modal');
+}
+
+document.getElementById('r-email').addEventListener('input', function() {
+  const calEl = document.getElementById('r-calid');
+  if (!calEl.value || calEl.value === document.getElementById('r-email').dataset.prev) {
+    calEl.value = this.value;
+  }
+  this.dataset.prev = this.value;
+});
+
+function saveRoster() {
+  const data = {
+    name:   document.getElementById('r-name').value.trim(),
+    email:  document.getElementById('r-email').value.trim(),
+    calId:  document.getElementById('r-calid').value.trim(),
+    active: document.getElementById('r-active').value,
+  };
+  if (!data.name || !data.email) { toast('Name and email are required', 'warning'); return; }
+  if (_editRosterId) {
+    const idx = state.roster.findIndex(p => p.id === _editRosterId);
+    state.roster[idx] = { ...state.roster[idx], ...data };
+    addLog(`Roster updated: ${data.name}`, 'info');
+  } else {
+    state.roster.push({ id: r(), ...data });
+    addLog(`Lecturer added: ${data.name} (${data.email})`, 'info');
+  }
+  save();
+  closeModal('roster-modal');
+  renderRoster();
+  toast(_editRosterId ? 'Lecturer updated' : 'Lecturer added ✓', 'success');
+}
+
+function deleteRoster(id) {
+  const p = state.roster.find(x => x.id === id);
+  if (!confirm(`Remove ${p.name} from the roster?`)) return;
+  state.roster = state.roster.filter(x => x.id !== id);
+  addLog(`Lecturer removed: ${p.name}`, 'info');
+  save();
+  renderRoster();
+  toast('Lecturer removed', 'warning');
+}
+
+// ══════════════════════════════════════════════
+// MODALS + TOASTS
+// ══════════════════════════════════════════════
+function openModal(id)  { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+
+function toast(msg, type='info') {
+  const wrap = document.getElementById('toast-wrap');
+  const el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ══════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════
+function fmtDate(d) {
+  const dt = new Date(d + 'T12:00:00');
+  return dt.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric' });
+}
+
+function refreshAll() {
+  const pending = state.exams.filter(e => e.status === 'PENDING').length;
+  document.getElementById('pending-badge').textContent = pending;
+}
+
+// ══════════════════════════════════════════════
+// SETTINGS FUNCTIONS
+// ══════════════════════════════════════════════
+function renderSettings() {
+  const apiUrl = localStorage.getItem('cfbc_api_url') || '';
+  const mode   = localStorage.getItem('cfbc_send_mode') || 'simulate';
+
+  document.getElementById('s-api-url').value  = apiUrl;
+  document.getElementById('s-send-mode').value = mode;
+  updateModeBanner(mode);
+
+  // Load SMTP from backend if URL is set
+  if (apiUrl) {
+    fetch(apiUrl.replace(/\/$/, '') + '/settings')
+      .then(r => r.json())
+      .then(d => {
+        document.getElementById('s-smtp-host').value   = d.host   || '';
+        document.getElementById('s-smtp-port').value   = d.port   || 587;
+        document.getElementById('s-smtp-secure').value = d.secure ? 'true' : 'false';
+        document.getElementById('s-smtp-user').value   = d.user   || '';
+        document.getElementById('s-smtp-pass').value   = d.pass   || '';
+        document.getElementById('s-smtp-name').value   = d.fromName || '';
+      })
+      .catch(() => {});
+  } else {
+    // Pre-fill defaults even without backend connected
+    document.getElementById('s-smtp-host').value   = 'smtp.gmail.com';
+    document.getElementById('s-smtp-port').value   = 587;
+    document.getElementById('s-smtp-secure').value = 'false';
+    document.getElementById('s-smtp-user').value   = 'clientmon@gmail.com';
+    document.getElementById('s-smtp-name').value   = 'CFBC Examinations Office';
+  }
+}
+
+function updateModeBanner(mode) {
+  const banner = document.getElementById('mode-banner');
+  if (mode === 'simulate') {
+    banner.style.display = 'block';
+    banner.style.background = '#fffbeb';
+    banner.style.border = '1px solid #fde68a';
+    banner.style.color = '#92400e';
+    banner.textContent = '⚠️ Simulate mode — no real emails will be sent.';
+  } else {
+    banner.style.display = 'block';
+    banner.style.background = '#e8f7f4';
+    banner.style.border = '1px solid #a7f3d0';
+    banner.style.color = '#065f46';
+    banner.textContent = '✅ Live mode — emails will be sent via your backend.';
+  }
+}
+
+function saveSendMode() {
+  const mode = document.getElementById('s-send-mode').value;
+  localStorage.setItem('cfbc_send_mode', mode);
+  updateModeBanner(mode);
+  toast(mode === 'live' ? '🔴 Live mode activated' : '🟡 Simulate mode activated',
+        mode === 'live' ? 'success' : 'warning');
+}
+
+async function testConnection() {
+  const url = document.getElementById('s-api-url').value.trim().replace(/\/$/, '');
+  if (!url) { toast('Enter a backend URL first', 'warning'); return; }
+
+  localStorage.setItem('cfbc_api_url', url);
+  const badge  = document.getElementById('conn-status-badge');
+  const result = document.getElementById('conn-result');
+  badge.className = 'badge badge-pending';
+  badge.textContent = 'Checking…';
+  result.style.display = 'none';
+
+  try {
+    const r = await fetch(`${url}/health`, { signal: AbortSignal.timeout(6000) });
+    const d = await r.json();
+    badge.className   = 'badge badge-sent';
+    badge.textContent = 'Connected ✓';
+    result.style.display = 'block';
+    result.style.color   = 'var(--teal)';
+    result.textContent   = `✅ Backend online — SMTP user: ${d.smtp}`;
+    toast('Backend connected!', 'success');
+  } catch(e) {
+    badge.className   = 'badge badge-error';
+    badge.textContent = 'Failed';
+    result.style.display = 'block';
+    result.style.color   = 'var(--red)';
+    result.textContent   = `❌ Could not reach backend: ${e.message}`;
+    toast('Backend unreachable', 'error');
+  }
+}
+
+async function saveSmtp() {
+  const url = (localStorage.getItem('cfbc_api_url') || '').replace(/\/$/, '');
+  if (!url) { toast('Set and test your backend URL first', 'warning'); return; }
+
+  const body = {
+    host:     document.getElementById('s-smtp-host').value.trim(),
+    port:     document.getElementById('s-smtp-port').value,
+    secure:   document.getElementById('s-smtp-secure').value === 'true',
+    user:     document.getElementById('s-smtp-user').value.trim(),
+    pass:     document.getElementById('s-smtp-pass').value,
+    fromName: document.getElementById('s-smtp-name').value.trim(),
+  };
+
+  const result = document.getElementById('smtp-result');
+  try {
+    const r = await fetch(`${url}/settings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const d = await r.json();
+    result.style.display = 'block';
+    result.style.color   = 'var(--teal)';
+    result.textContent   = '✅ ' + d.message;
+    toast('SMTP settings saved', 'success');
+    addLog('SMTP settings updated via Settings panel', 'info');
+    save();
+  } catch(e) {
+    result.style.display = 'block';
+    result.style.color   = 'var(--red)';
+    result.textContent   = '❌ Failed: ' + e.message;
+    toast('Could not save — is backend running?', 'error');
+  }
+}
+
+async function testSmtp() {
+  const url = (localStorage.getItem('cfbc_api_url') || '').replace(/\/$/, '');
+  if (!url) { toast('Set your backend URL first', 'warning'); return; }
+
+  const result = document.getElementById('smtp-result');
+  result.style.display = 'block';
+  result.style.color   = 'var(--text-muted)';
+  result.textContent   = 'Testing SMTP connection…';
+
+  try {
+    const r = await fetch(`${url}/settings/test`, { method: 'POST' });
+    const d = await r.json();
+    result.style.color  = d.ok ? 'var(--teal)' : 'var(--red)';
+    result.textContent  = (d.ok ? '✅ ' : '❌ ') + d.message;
+    toast(d.ok ? 'SMTP connection OK!' : 'SMTP test failed', d.ok ? 'success' : 'error');
+  } catch(e) {
+    result.style.color  = 'var(--red)';
+    result.textContent  = '❌ ' + e.message;
+    toast('Test failed', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+renderDashboard();
+refreshAll();
+</script>
+</body>
+</html>
