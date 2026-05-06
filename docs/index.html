@@ -461,6 +461,8 @@ textarea { resize: vertical; min-height: 80px; }
 }
 .combo-clear.visible { display: block; }
 
+.dash-upcoming-cards { display: none; }
+
 /* ── MOBILE EXAM CARDS ── */
 .exam-cards { display: none; }
 .exam-card {
@@ -556,6 +558,10 @@ textarea { resize: vertical; min-height: 80px; }
   /* Roster — hide table, show cards */
   .roster-table-wrap { display: none; }
   .roster-cards { display: block; }
+
+  /* Dashboard upcoming — hide table, show cards */
+  .dash-upcoming-table-wrap { display: none; }
+  .dash-upcoming-cards { display: block; }
 
   /* Notify rows — full width */
   .notify-row { align-items: flex-start; }
@@ -785,7 +791,7 @@ textarea { resize: vertical; min-height: 80px; }
             <div class="card-title">Upcoming Exams — Next 7 Days</div>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap dash-upcoming-table-wrap">
               <table id="dash-upcoming-table">
                 <thead><tr>
                   <th>Date</th><th>Time</th><th>Course</th><th>Room</th><th>Invigilators</th><th>Status</th>
@@ -795,6 +801,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
         </div>
+        <div class="dash-upcoming-cards" id="dash-upcoming-cards"></div>
 
         <div class="card">
           <div class="card-header"><div class="card-title">Recent Activity</div></div>
@@ -1304,8 +1311,12 @@ function renderDashboard() {
     .sort((a,b) => a.date.localeCompare(b.date));
 
   const tbody = document.getElementById('dash-upcoming-body');
+  const dashCards = document.getElementById('dash-upcoming-cards');
+
   if (upcoming.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="icon">📅</div><div class="msg">No exams in the next 7 days</div></div></td></tr>';
+    const empty = '<div class="empty"><div class="icon">📅</div><div class="msg">No exams in the next 7 days</div></div>';
+    tbody.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`;
+    dashCards.innerHTML = empty;
   } else {
     tbody.innerHTML = upcoming.map(e => `
       <tr>
@@ -1316,6 +1327,31 @@ function renderDashboard() {
         <td style="font-size:12px">${[e.inv1,e.inv2].filter(Boolean).join('<br>')}</td>
         <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
       </tr>`).join('');
+
+    // Mobile cards — group by date
+    const byDate = {};
+    upcoming.forEach(e => { (byDate[e.date] = byDate[e.date] || []).push(e); });
+    dashCards.innerHTML = Object.entries(byDate).map(([date, dayExams]) => `
+      <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);padding:0 2px">${fmtDate(date)}</div>
+      ${dayExams.map(e => `
+        <div class="exam-card status-${e.status.toLowerCase()}">
+          <div class="exam-card-top">
+            <div>
+              <div class="exam-card-code">${e.code}</div>
+              <div class="exam-card-name">${e.courseName}</div>
+            </div>
+            <span class="badge badge-${e.status.toLowerCase()}">${e.status}</span>
+          </div>
+          <div class="exam-card-badges">
+            <span class="badge ${e.time==='9:00 AM'?'badge-am':'badge-pm'}">${e.time}</span>
+            <span class="badge" style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border)">📍 ${e.room}</span>
+          </div>
+          <div class="exam-card-row">
+            <span class="icon">🧑‍💼</span>
+            <div><strong>${[e.inv1,e.inv2].filter(Boolean).join(' &amp; ') || '—'}</strong></div>
+          </div>
+        </div>`).join('')}
+    `).join('');
   }
 
   // Recent log
