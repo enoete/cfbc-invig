@@ -470,43 +470,40 @@ textarea { resize: vertical; min-height: 80px; }
 }
 
 /* ── RESPONSIVE — MOBILE ── */
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   /* Hide desktop sidebar, show bottom nav */
-  .sidebar { display: none; }
-  .bottom-nav { display: flex; }
+  .sidebar { display: none !important; }
+  .bottom-nav { display: flex !important; }
 
   /* Main fills full width */
   .main { width: 100%; }
 
   /* Topbar */
   .topbar {
-    padding: 0 16px;
+    padding: 0 12px;
     height: 52px;
   }
   .topbar-title { font-size: 15px; }
   .topbar-actions { gap: 6px; }
-  .topbar-actions .btn { padding: 6px 10px; font-size: 12px; }
-  .topbar-actions .btn span { display: none; }
+  .topbar-actions .btn { padding: 7px 10px; font-size: 12px; }
+  .topbar-actions .btn-label { display: none; }
 
   /* Content */
   .content { padding: 12px; padding-bottom: 80px; }
 
-  /* Stats — 2 col on mobile */
-  .stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin-bottom: 16px;
-  }
-  .stat-card { padding: 14px 14px; }
+  /* Stats — 2 col */
+  .stats { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { padding: 14px; }
   .stat-card .value { font-size: 22px; }
 
   /* Cards */
   .card-header { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
   .card-body { padding: 12px; }
 
-  /* Tables → card-style rows on mobile */
+  /* Tables scroll horizontally */
   .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  table { min-width: 600px; }
+  table { min-width: 580px; font-size: 12px; }
+  th, td { padding: 9px 10px; }
 
   /* Search bar stacks */
   .search-bar { flex-direction: column; align-items: stretch; }
@@ -515,19 +512,21 @@ textarea { resize: vertical; min-height: 80px; }
   .search-bar select { width: 100%; }
   .search-bar .btn { width: 100%; justify-content: center; }
 
-  /* Forms */
+  /* Forms go single column */
   .form-grid-2 { grid-template-columns: 1fr; }
   .form-grid-3 { grid-template-columns: 1fr; }
-  .modal { width: 100%; max-width: 100%; margin: 0; border-radius: 16px 16px 0 0; max-height: 92vh; }
+
+  /* Modals slide up from bottom */
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+  }
   .overlay { align-items: flex-end; }
 
-  /* Notify rows */
-  .notify-row { flex-wrap: wrap; gap: 8px; }
-
-  /* Topbar action buttons — icon only */
-  .btn-topbar-label { display: none; }
-
-  /* Settings max width full */
+  /* Settings */
   #panel-settings > div { max-width: 100%; }
 }
 
@@ -649,8 +648,8 @@ textarea { resize: vertical; min-height: 80px; }
     <header class="topbar">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-actions">
-        <button class="btn btn-gold" onclick="showPanel('notify')">✉️ Send Notifications</button>
-        <button class="btn btn-primary" onclick="openExamModal()">+ Add Exam</button>
+        <button class="btn btn-gold" onclick="showPanel('notify')">✉️ <span class="btn-label">Send Notifications</span></button>
+        <button class="btn btn-primary" onclick="openExamModal()">+ <span class="btn-label">Add Exam</span></button>
       </div>
     </header>
 
