@@ -461,17 +461,223 @@ textarea { resize: vertical; min-height: 80px; }
 }
 .combo-clear.visible { display: block; }
 
-/* ── RESPONSIVE ── */
+.dash-upcoming-cards { display: none; }
+
+/* ── MOBILE EXAM CARDS ── */
+.exam-cards { display: none; }
+.exam-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.exam-card.status-sent   { border-left: 4px solid var(--teal); }
+.exam-card.status-pending { border-left: 4px solid var(--gold); }
+.exam-card.status-error  { border-left: 4px solid var(--red); }
+.exam-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.exam-card-code {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.2;
+}
+.exam-card-name {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.exam-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.exam-card-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.exam-card-row .icon { font-size: 13px; flex-shrink: 0; }
+.exam-card-row strong { color: var(--text); }
+.exam-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+.exam-card-actions .btn { flex: 1; justify-content: center; font-size: 12px; }
+
+/* ── MOBILE ROSTER CARDS ── */
+.roster-cards { display: none; }
+.roster-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.roster-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.roster-avatar.inactive { background: var(--text-faint); }
+.roster-info { flex: 1; min-width: 0; }
+.roster-info .name { font-weight: 600; font-size: 14px; color: var(--navy); }
+.roster-info .email { font-size: 11px; color: var(--text-faint); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.roster-card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+@media (max-width: 768px) {
+  /* Timetable — hide table, show cards */
+  .tt-table-wrap { display: none; }
+  .exam-cards { display: block; }
+
+  /* Roster — hide table, show cards */
+  .roster-table-wrap { display: none; }
+  .roster-cards { display: block; }
+
+  /* Dashboard upcoming — hide table, show cards */
+  .dash-upcoming-table-wrap { display: none; }
+  .dash-upcoming-cards { display: block; }
+
+  /* Notify rows — full width */
+  .notify-row { align-items: flex-start; }
+}
+
+/* ── RESPONSIVE — TABLET ── */
 @media (max-width: 900px) {
   .stats { grid-template-columns: 1fr 1fr; }
   .form-grid-3 { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 640px) {
-  .sidebar { width: 60px; }
-  .sidebar-logo .wordmark, .sidebar-logo .sub, .nav-label, .nav-item span { display: none; }
-  .nav-item { justify-content: center; padding: 10px; }
+  .topbar { padding: 0 16px; }
   .content { padding: 16px; }
-  .stats { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── RESPONSIVE — MOBILE ── */
+@media (max-width: 768px) {
+  /* Hide desktop sidebar, show bottom nav */
+  .sidebar { display: none !important; }
+  .bottom-nav { display: flex !important; }
+
+  /* Main fills full width */
+  .main { width: 100%; }
+
+  /* Topbar */
+  .topbar {
+    padding: 0 12px;
+    height: 52px;
+  }
+  .topbar-title { font-size: 15px; }
+  .topbar-actions { gap: 6px; }
+  .topbar-actions .btn { padding: 7px 10px; font-size: 12px; }
+  .topbar-actions .btn-label { display: none; }
+
+  /* Content */
+  .content { padding: 12px; padding-bottom: 80px; }
+
+  /* Stats — 2 col */
+  .stats { grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .stat-card { padding: 14px; }
+  .stat-card .value { font-size: 22px; }
+
+  /* Cards */
+  .card-header { padding: 12px 14px; flex-wrap: wrap; gap: 8px; }
+  .card-body { padding: 12px; }
+
+  /* Tables scroll horizontally */
+  .tbl-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { min-width: 580px; font-size: 12px; }
+  th, td { padding: 9px 10px; }
+
+  /* Search bar stacks */
+  .search-bar { flex-direction: column; align-items: stretch; }
+  .search-input-wrap { width: 100%; }
+  .search-input-wrap input { width: 100%; }
+  .search-bar select { width: 100%; }
+  .search-bar .btn { width: 100%; justify-content: center; }
+
+  /* Forms go single column */
+  .form-grid-2 { grid-template-columns: 1fr; }
+  .form-grid-3 { grid-template-columns: 1fr; }
+
+  /* Modals slide up from bottom */
+  .modal {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+  }
+  .overlay { align-items: flex-end; }
+
+  /* Settings */
+  #panel-settings > div { max-width: 100%; }
+}
+
+/* ── BOTTOM NAV (mobile only) ── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--navy);
+  height: 62px;
+  z-index: 50;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 0 4px;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 8px 4px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.45);
+  transition: all 0.15s;
+  position: relative;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+.bottom-nav-item .bn-icon { font-size: 20px; line-height: 1; }
+.bottom-nav-item.active { color: var(--gold-light); }
+.bottom-nav-item .bn-badge {
+  position: absolute;
+  top: 4px; right: calc(50% - 18px);
+  background: var(--gold);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 99px;
+  min-width: 16px;
+  text-align: center;
 }
 </style>
 </head>
@@ -518,13 +724,38 @@ textarea { resize: vertical; min-height: 80px; }
     <div class="sidebar-footer">Semester II · AY 2025/26</div>
   </aside>
 
+  <!-- BOTTOM NAV (mobile only) -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <div class="bottom-nav-item active" onclick="showPanel('dashboard')" data-panel="dashboard">
+      <span class="bn-icon">📊</span>
+      <span>Home</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showPanel('timetable')" data-panel="timetable">
+      <span class="bn-icon">📅</span>
+      <span>Timetable</span>
+      <span class="bn-badge" id="bn-pending-badge" style="display:none">0</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showPanel('notify')" data-panel="notify">
+      <span class="bn-icon">✉️</span>
+      <span>Notify</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showPanel('roster')" data-panel="roster">
+      <span class="bn-icon">👥</span>
+      <span>Roster</span>
+    </div>
+    <div class="bottom-nav-item" onclick="showPanel('settings')" data-panel="settings">
+      <span class="bn-icon">⚙️</span>
+      <span>Settings</span>
+    </div>
+  </nav>
+
   <!-- MAIN -->
   <div class="main">
     <header class="topbar">
       <div class="topbar-title" id="topbar-title">Dashboard</div>
       <div class="topbar-actions">
-        <button class="btn btn-gold" onclick="showPanel('notify')">✉️ Send Notifications</button>
-        <button class="btn btn-primary" onclick="openExamModal()">+ Add Exam</button>
+        <button class="btn btn-gold" onclick="showPanel('notify')">✉️ <span class="btn-label">Send Notifications</span></button>
+        <button class="btn btn-primary" onclick="openExamModal()">+ <span class="btn-label">Add Exam</span></button>
       </div>
     </header>
 
@@ -560,7 +791,7 @@ textarea { resize: vertical; min-height: 80px; }
             <div class="card-title">Upcoming Exams — Next 7 Days</div>
           </div>
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap dash-upcoming-table-wrap">
               <table id="dash-upcoming-table">
                 <thead><tr>
                   <th>Date</th><th>Time</th><th>Course</th><th>Room</th><th>Invigilators</th><th>Status</th>
@@ -570,6 +801,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
         </div>
+        <div class="dash-upcoming-cards" id="dash-upcoming-cards"></div>
 
         <div class="card">
           <div class="card-header"><div class="card-title">Recent Activity</div></div>
@@ -599,7 +831,7 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap tt-table-wrap">
               <table>
                 <thead><tr>
                   <th>Date</th><th>Time</th><th>Code</th><th>Course Name</th>
@@ -611,6 +843,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
         </div>
+        <div class="exam-cards" id="tt-cards"></div>
       </div>
 
       <!-- ══ ROSTER ══ -->
@@ -624,7 +857,7 @@ textarea { resize: vertical; min-height: 80px; }
         </div>
         <div class="card">
           <div class="card-body" style="padding:0">
-            <div class="tbl-wrap">
+            <div class="tbl-wrap roster-table-wrap">
               <table>
                 <thead><tr><th>Name</th><th>Email</th><th>Calendar ID</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="roster-body"></tbody>
@@ -632,6 +865,7 @@ textarea { resize: vertical; min-height: 80px; }
             </div>
           </div>
         </div>
+        <div class="roster-cards" id="roster-cards"></div>
       </div>
 
       <!-- ══ NOTIFY ══ -->
@@ -945,6 +1179,22 @@ textarea { resize: vertical; min-height: 80px; }
 
 <script>
 // ══════════════════════════════════════════════
+// APP CONFIG — hardcoded defaults
+// (localStorage overrides these if admin changes them in Settings)
+// ══════════════════════════════════════════════
+const APP_DEFAULTS = {
+  apiUrl:   'https://api.tekii.org/cfbc-api',
+  sendMode: 'live',
+};
+
+function getApiUrl() {
+  return (localStorage.getItem('cfbc_api_url') || APP_DEFAULTS.apiUrl).replace(/\/$/, '');
+}
+function getSendMode() {
+  return localStorage.getItem('cfbc_send_mode') || APP_DEFAULTS.sendMode;
+}
+
+// ══════════════════════════════════════════════
 // DATA STORE — persisted in localStorage
 // ══════════════════════════════════════════════
 const STORE_KEY = 'cfbc_invig_v1';
@@ -1034,10 +1284,14 @@ const TITLES = {
 function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => {
     if (n.getAttribute('onclick') && n.getAttribute('onclick').includes("'" + name + "'"))
       n.classList.add('active');
+  });
+  document.querySelectorAll('.bottom-nav-item').forEach(n => {
+    if (n.dataset.panel === name) n.classList.add('active');
   });
   document.getElementById('topbar-title').textContent = TITLES[name] || name;
   if (name === 'timetable') renderTimetable();
@@ -1046,6 +1300,8 @@ function showPanel(name) {
   if (name === 'log')       renderLog();
   if (name === 'settings')  renderSettings();
   if (name === 'dashboard') renderDashboard();
+  // Scroll to top on panel switch (mobile)
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ══════════════════════════════════════════════
@@ -1071,8 +1327,12 @@ function renderDashboard() {
     .sort((a,b) => a.date.localeCompare(b.date));
 
   const tbody = document.getElementById('dash-upcoming-body');
+  const dashCards = document.getElementById('dash-upcoming-cards');
+
   if (upcoming.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="6"><div class="empty"><div class="icon">📅</div><div class="msg">No exams in the next 7 days</div></div></td></tr>';
+    const empty = '<div class="empty"><div class="icon">📅</div><div class="msg">No exams in the next 7 days</div></div>';
+    tbody.innerHTML = `<tr><td colspan="6">${empty}</td></tr>`;
+    dashCards.innerHTML = empty;
   } else {
     tbody.innerHTML = upcoming.map(e => `
       <tr>
@@ -1083,6 +1343,31 @@ function renderDashboard() {
         <td style="font-size:12px">${[e.inv1,e.inv2].filter(Boolean).join('<br>')}</td>
         <td><span class="badge badge-${e.status.toLowerCase()}">${e.status}</span></td>
       </tr>`).join('');
+
+    // Mobile cards — group by date
+    const byDate = {};
+    upcoming.forEach(e => { (byDate[e.date] = byDate[e.date] || []).push(e); });
+    dashCards.innerHTML = Object.entries(byDate).map(([date, dayExams]) => `
+      <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);padding:0 2px">${fmtDate(date)}</div>
+      ${dayExams.map(e => `
+        <div class="exam-card status-${e.status.toLowerCase()}">
+          <div class="exam-card-top">
+            <div>
+              <div class="exam-card-code">${e.code}</div>
+              <div class="exam-card-name">${e.courseName}</div>
+            </div>
+            <span class="badge badge-${e.status.toLowerCase()}">${e.status}</span>
+          </div>
+          <div class="exam-card-badges">
+            <span class="badge ${e.time==='9:00 AM'?'badge-am':'badge-pm'}">${e.time}</span>
+            <span class="badge" style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border)">📍 ${e.room}</span>
+          </div>
+          <div class="exam-card-row">
+            <span class="icon">🧑‍💼</span>
+            <div><strong>${[e.inv1,e.inv2].filter(Boolean).join(' &amp; ') || '—'}</strong></div>
+          </div>
+        </div>`).join('')}
+    `).join('');
   }
 
   // Recent log
@@ -1118,10 +1403,16 @@ function renderTimetable() {
   }).sort((a,b) => a.date.localeCompare(b.date) || a.time.localeCompare(b.time));
 
   const tbody = document.getElementById('tt-body');
+  const cards = document.getElementById('tt-cards');
+
   if (exams.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="11"><div class="empty"><div class="icon">📅</div><div class="msg">No exams match your filter</div></div></td></tr>';
+    const empty = '<div class="empty"><div class="icon">📅</div><div class="msg">No exams match your filter</div></div>';
+    tbody.innerHTML = `<tr><td colspan="11">${empty}</td></tr>`;
+    cards.innerHTML = empty;
     return;
   }
+
+  // ── DESKTOP TABLE ──
   tbody.innerHTML = exams.map(e => `
     <tr>
       <td style="white-space:nowrap">${fmtDate(e.date)}</td>
@@ -1140,6 +1431,37 @@ function renderTimetable() {
         ${e.status==='PENDING'?`<button class="btn btn-teal btn-sm" onclick="quickSend('${e.id}')">✉️</button>`:''}
       </td>
     </tr>`).join('');
+
+  // ── MOBILE CARDS ──
+  // Group by date
+  const byDate = {};
+  exams.forEach(e => { (byDate[e.date] = byDate[e.date] || []).push(e); });
+
+  cards.innerHTML = Object.entries(byDate).map(([date, dayExams]) => `
+    <div style="margin-bottom:6px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text-faint);padding:0 2px">${fmtDate(date)}</div>
+    ${dayExams.map(e => `
+      <div class="exam-card status-${e.status.toLowerCase()}">
+        <div class="exam-card-top">
+          <div>
+            <div class="exam-card-code">${e.code}</div>
+            <div class="exam-card-name">${e.courseName}</div>
+          </div>
+          <span class="badge badge-${e.status.toLowerCase()}">${e.status}</span>
+        </div>
+        <div class="exam-card-badges">
+          <span class="badge ${e.time==='9:00 AM'?'badge-am':'badge-pm'}">${e.time}</span>
+          <span class="badge" style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border)">📍 ${e.room}</span>
+          <span class="badge" style="background:#f1f5f9;color:var(--text-muted);border:1px solid var(--border)">👥 ${e.students} students</span>
+        </div>
+        <div class="exam-card-row"><span class="icon">🧑‍💼</span><div><strong>${e.inv1 || '—'}</strong>${e.inv2 ? ` &amp; <strong>${e.inv2}</strong>` : ''}</div></div>
+        <div class="exam-card-row"><span class="icon">🎓</span><div>${e.lecturer}</div></div>
+        <div class="exam-card-actions">
+          <button class="btn btn-ghost btn-sm" onclick="openExamModal('${e.id}')">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteExam('${e.id}')">🗑️</button>
+          ${e.status==='PENDING'?`<button class="btn btn-teal btn-sm" onclick="quickSend('${e.id}')">✉️ Notify</button>`:''}
+        </div>
+      </div>`).join('')}
+  `).join('');
 }
 
 // ══════════════════════════════════════════════
@@ -1149,10 +1471,16 @@ function renderRoster() {
   const q = (document.getElementById('roster-search').value || '').toLowerCase();
   const list = state.roster.filter(p => !q || (p.name + p.email).toLowerCase().includes(q));
   const tbody = document.getElementById('roster-body');
+  const cards = document.getElementById('roster-cards');
+
   if (list.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5"><div class="empty"><div class="icon">👥</div><div class="msg">No lecturers found</div></div></td></tr>';
+    const empty = '<div class="empty"><div class="icon">👥</div><div class="msg">No lecturers found</div></div>';
+    tbody.innerHTML = `<tr><td colspan="5">${empty}</td></tr>`;
+    cards.innerHTML = empty;
     return;
   }
+
+  // ── DESKTOP TABLE ──
   tbody.innerHTML = list.map(p => `
     <tr>
       <td><strong>${p.name}</strong></td>
@@ -1164,6 +1492,23 @@ function renderRoster() {
         <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoster('${p.id}')">🗑️</button>
       </td>
     </tr>`).join('');
+
+  // ── MOBILE CARDS ──
+  cards.innerHTML = list.map(p => {
+    const initials = p.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+    return `
+    <div class="roster-card">
+      <div class="roster-avatar ${p.active==='YES'?'':'inactive'}">${initials}</div>
+      <div class="roster-info">
+        <div class="name">${p.name} ${p.active==='YES'?'':'<span class="badge badge-error" style="font-size:10px;padding:1px 6px">Inactive</span>'}</div>
+        <div class="email">${p.email}</div>
+      </div>
+      <div class="roster-card-actions">
+        <button class="btn btn-ghost btn-sm btn-icon" onclick="openRosterModal('${p.id}')">✏️</button>
+        <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoster('${p.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ══════════════════════════════════════════════
@@ -1219,8 +1564,8 @@ function sendAll() {
 }
 function executeSend() {
   closeModal('send-modal');
-  const mode   = localStorage.getItem('cfbc_send_mode') || 'simulate';
-  const apiUrl = (localStorage.getItem('cfbc_api_url') || '').replace(/\/$/, '');
+  const mode   = getSendMode();
+  const apiUrl = getApiUrl();
 
   if (mode === 'live' && !apiUrl) {
     toast('Set your backend URL in Settings first', 'warning');
@@ -1245,6 +1590,7 @@ function executeSend() {
           code:       exam.code,
           courseName: exam.courseName,
           date:       fmtDate(exam.date),
+          rawDate:    exam.date,
           time:       exam.time,
           room:       exam.room,
           students:   exam.students,
@@ -1672,14 +2018,21 @@ function fmtDate(d) {
 function refreshAll() {
   const pending = state.exams.filter(e => e.status === 'PENDING').length;
   document.getElementById('pending-badge').textContent = pending;
+  const bnBadge = document.getElementById('bn-pending-badge');
+  if (pending > 0) {
+    bnBadge.textContent  = pending;
+    bnBadge.style.display = 'block';
+  } else {
+    bnBadge.style.display = 'none';
+  }
 }
 
 // ══════════════════════════════════════════════
 // SETTINGS FUNCTIONS
 // ══════════════════════════════════════════════
 function renderSettings() {
-  const apiUrl = localStorage.getItem('cfbc_api_url') || '';
-  const mode   = localStorage.getItem('cfbc_send_mode') || 'simulate';
+  const apiUrl = getApiUrl();
+  const mode   = getSendMode();
 
   document.getElementById('s-api-url').value  = apiUrl;
   document.getElementById('s-send-mode').value = mode;
@@ -1722,8 +2075,7 @@ function updateModeBanner(mode) {
     banner.style.border = '1px solid #a7f3d0';
     banner.style.color = '#065f46';
     banner.textContent = '✅ Live mode — emails will be sent via your backend.';
-  }
-}
+  }}
 
 function saveSendMode() {
   const mode = document.getElementById('s-send-mode').value;
@@ -1734,8 +2086,7 @@ function saveSendMode() {
 }
 
 async function testConnection() {
-  const url = document.getElementById('s-api-url').value.trim().replace(/\/$/, '');
-  if (!url) { toast('Enter a backend URL first', 'warning'); return; }
+  const url = document.getElementById('s-api-url').value.trim().replace(/\/$/, '') || getApiUrl();
 
   localStorage.setItem('cfbc_api_url', url);
   const badge  = document.getElementById('conn-status-badge');
@@ -1764,8 +2115,7 @@ async function testConnection() {
 }
 
 async function saveSmtp() {
-  const url = (localStorage.getItem('cfbc_api_url') || '').replace(/\/$/, '');
-  if (!url) { toast('Set and test your backend URL first', 'warning'); return; }
+  const url = getApiUrl();
 
   const body = {
     host:     document.getElementById('s-smtp-host').value.trim(),
@@ -1799,8 +2149,7 @@ async function saveSmtp() {
 }
 
 async function testSmtp() {
-  const url = (localStorage.getItem('cfbc_api_url') || '').replace(/\/$/, '');
-  if (!url) { toast('Set your backend URL first', 'warning'); return; }
+  const url = getApiUrl();
 
   const result = document.getElementById('smtp-result');
   result.style.display = 'block';
